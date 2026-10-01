@@ -1,0 +1,1 @@
+# Análisis y diseño — Sistema de Invernadero Inteligente 🌱
