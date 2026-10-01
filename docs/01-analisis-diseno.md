@@ -53,3 +53,66 @@ Para este problema se identifican cuatro objetos conceptuales principales:
 | **Sensor de Humedad Ambiental** | Monitorear e interpretar el vapor de agua en el aire | Identificador, ubicación, estado (activo/inactivo), última medición en % | Registrar nueva medición, permitir consultar su última lectura, evaluar si la humedad ambiental es baja (< 40 %), adecuada (40–70 %) o alta (> 70 %) |
 | **Sensor de Humedad del Suelo** | Monitorear la humedad del sustrato y advertir necesidad de riego | Identificador, ubicación, estado (activo/inactivo), última medición en % | Registrar nueva medición, permitir consultar su última lectura, evaluar si la humedad del suelo es baja (< 30 %), adecuada (30–70 %) o alta (> 70 %) |
 | **Sistema de Riego** | Controlar el suministro de agua al cultivo | Estado operativo actual (activo / inactivo) | Activar el suministro de agua, desactivar el suministro de agua, informar su estado actual |
+## 4. Características comunes y especialización
+
+Al comparar los tres sensores analizados se identifican los siguientes patrones:
+
+1. **¿Qué información tienen en común?**
+   Todos los sensores comparten:
+    - Un identificador único (ID).
+    - Una ubicación física dentro del invernadero.
+    - Un estado operativo (activo o inactivo).
+    - El almacenamiento de su última medición numérica.
+
+2. **¿Qué comportamientos tienen en común?**
+   Todos permiten:
+    - Registrar y actualizar una nueva lectura.
+    - Consultar su identificación, ubicación y estado.
+    - Evaluar su medición para ofrecer un diagnóstico cualitativo.
+
+3. **¿Qué características cambian dependiendo del tipo de sensor?**
+    - La unidad física asociada a la medición (°C frente a %).
+    - Los rangos de valores válidos.
+    - Los criterios y umbrales de decisión para interpretar el dato. Un valor de 25 representa "temperatura adecuada" en el sensor de temperatura, pero representaría "humedad baja" en el sensor de humedad ambiental.
+
+4. **¿Existe un concepto general que permita representar a todos los sensores?**
+   Sí, el concepto abstracto y general de **Sensor**.
+
+5. **¿Qué elementos podrían representar especializaciones de ese concepto?**
+   Las especializaciones directas son:
+    - `SensorTemperatura`
+    - `SensorHumedad`
+    - `SensorHumedadSuelo`
+
+---
+
+## 5. Relaciones entre objetos
+
+### Distinción entre relaciones "ES UN" y "TIENE / UTILIZA UN"
+
+- **Relación "ES UN" (Generalización y Especialización):**
+    - Un sensor de temperatura **es un** sensor.
+    - Un sensor de humedad ambiental **es un** sensor.
+    - Un sensor de humedad del suelo **es un** sensor.  
+      *Conclusión:* Estas relaciones deben modelarse mediante **herencia**, donde una superclase común concentre los atributos y métodos compartidos, mientras las subclases especialicen el comportamiento de evaluación.
+
+- **Relación "TIENE / UTILIZA UN" (Asociación y Dependencia):**
+    - El sistema general del invernadero **tiene** una colección de sensores y **tiene** un sistema de riego.
+    - El proceso de toma de decisiones **utiliza** la lectura del sensor de humedad del suelo para determinar si el sistema de riego debe operar.
+
+### Colaboración entre objetos
+- El módulo de control lee el estado del `SensorHumedadSuelo`.
+- Con base en el resultado cualitativo (humedad baja), el módulo envía la instrucción `activar()` o `desactivar()` al `SistemaRiego`.
+
+---
+
+### Pregunta clave: ¿Por qué `SistemaRiego` no debería ser una subclase de `Sensor`?
+
+El `SistemaRiego` **no debe ser una subclase de `Sensor`** debido a las siguientes razones fundamentales de diseño orientado a objetos:
+
+1. **Ruptura de la relación semántica "ES UN":**  
+   Un sistema de riego no es un sensor. Un sensor es un componente de **entrada** (lectura pasiva del entorno), mientras que un sistema de riego es un componente de **salida o actuador** (modifica activamente el entorno).
+2. **Herencia forzada e incoherente:**  
+   Si `SistemaRiego` heredara de `Sensor`, estaría obligado a heredar atributos como `ultimaMedicion` o métodos como `evaluarMedicion()`, los cuales carecen por completo de sentido para una bomba o electroválvula de riego.
+3. **Violación del Principio de Sustitución de Liskov (LSP):**  
+   El sistema no puede tratar indistintamente a un actuador como si fuera un dispositivo de medición. Un sistema de riego no produce lecturas del entorno; colabora con los sensores mediante una relación de asociación o uso, no de parentesco jerárquico.
