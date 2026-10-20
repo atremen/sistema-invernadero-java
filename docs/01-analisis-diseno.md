@@ -116,3 +116,22 @@ El `SistemaRiego` **no debe ser una subclase de `Sensor`** debido a las siguient
    Si `SistemaRiego` heredara de `Sensor`, estaría obligado a heredar atributos como `ultimaMedicion` o métodos como `evaluarMedicion()`, los cuales carecen por completo de sentido para una bomba o electroválvula de riego.
 3. **Violación del Principio de Sustitución de Liskov (LSP):**  
    El sistema no puede tratar indistintamente a un actuador como si fuera un dispositivo de medición. Un sistema de riego no produce lecturas del entorno; colabora con los sensores mediante una relación de asociación o uso, no de parentesco jerárquico.
+## 6. Reflexión sobre constructores y sobrescritura
+
+### Constructores y super
+1. **¿Los constructores de la superclase se heredan?**  
+   No, los constructores no se heredan en Java. Cada subclase define sus propios constructores.
+2. **Cuando creas un objeto de una subclase, ¿qué constructor se ejecuta primero?**  
+   Primero se ejecuta el constructor de la superclase (`Sensor`) para inicializar el estado base del objeto, y posteriormente continúa el constructor de la subclase.
+3. **¿Para qué utilizaste `super(...)`?**  
+   Para reutilizar la lógica de inicialización de los atributos `id` y `ubicacion` definida en `Sensor`, evitando duplicar asignaciones y respetando la encapsulación de la superclase.
+
+### Sobrescritura
+1. **¿Qué método sobrescribiste?**  
+   El método `evaluarMedicion()`.
+2. **¿Qué indica `@Override`?**  
+   Le indica al compilador que el método pretende sobrescribir una definición existente en la superclase. Si la firma cambia accidentalmente (por ejemplo, en el nombre o parámetros), el compilador marcará un error.
+3. **¿Por qué utilizaste el mismo nombre de método en las diferentes subclases?**  
+   Porque la acción conceptual es idéntica en todos los sensores: evaluar la lectura actual. Lo único que varía es la regla de negocio para clasificar esa lectura.
+4. **¿Qué ventaja tiene esto frente a crear métodos con nombres distintos?**  
+   Permite aplicar polimorfismo: podemos invocar `evaluarMedicion()` sobre cualquier referencia de tipo `Sensor` sin necesidad de conocer de antemano el tipo concreto del objeto ni escribir estructuras `switch` o `if/else`.
