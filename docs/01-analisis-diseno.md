@@ -173,3 +173,35 @@ El `SistemaRiego` **no debe ser una subclase de `Sensor`** debido a las siguient
 ### Relación entre sensores y sistema de riego
 * **¿El sistema de riego "es un" sensor o utiliza información proporcionada por los sensores?**  
   `SistemaRiego` **utiliza** información de los sensores. No es un sensor porque su responsabilidad no es medir ni registrar variables ambientales, sino actuar sobre el entorno físico (abrir o cerrar válvulas). Representa una relación de asociación/colaboración, no de herencia.
+## 9. Evidencia de pruebas ejecutadas
+
+| Caso de prueba | Entrada simulada | Resultado obtenido en ejecución | Estado |
+|---|---|---|:---:|
+| Creación de sensores | Constructor con ID y Ubicación | Objetos inicializados con medición 0.0 y activo en true | Superado |
+| Temp. Baja (< 18 °C) | 14.0 °C | "Temperatura baja (14.0 °C): riesgo de frío para el cultivo." | Superado |
+| Temp. Adecuada (18–30 °C) | 24.0 °C | "Temperatura adecuada (24.0 °C): condiciones óptimas." | Superado |
+| Temp. Alta (> 30 °C) | 35.0 °C | "Temperatura alta (35.0 °C): activar ventilación o sombra." | Superado |
+| Hum. Amb. Baja (< 40 %) | 30.0 % | "Humedad ambiental baja (30.0%): aire seco..." | Superado |
+| Hum. Amb. Adecuada (40–70 %) | 55.0 % | "Humedad ambiental adecuada (55.0%): entorno equilibrado." | Superado |
+| Hum. Amb. Alta (> 70 %) | 80.0 % | "Humedad ambiental alta (80.0%): riesgo de hongos." | Superado |
+| Hum. Suelo Baja (< 30 %) | 20.0 % | "Humedad del suelo baja (20.0%): suelo seco..." | Superado |
+| Hum. Suelo Adecuada (30–70 %) | 50.0 % | "Humedad del suelo adecuada (50.0%): nivel óptimo." | Superado |
+| Hum. Suelo Alta (> 70 %) | 85.0 % | "Humedad del suelo alta (85.0%): suelo saturado..." | Superado |
+| Arreglo polimórfico | `Sensor[]` con 3 subclases | Cada instancia despacha su propio método en tiempo de ejecución | Superado |
+| `instanceof` y Casting | `(SensorHumedadSuelo) s` | Se accede a `requiereRiego()` sin `ClassCastException` | Superado |
+| Control de Riego (Suelo seco) | 15.0 % | `SistemaRiego` detecta nivel crítico y abre válvula | Superado |
+| Control de Riego (Suelo óptimo)| 55.0 % | `SistemaRiego` detecta nivel adecuado y cierra válvula | Superado |
+
+## 10. Cambios realizados al diseño (UML Inicial vs. Final)
+
+Durante la implementación en Java se incorporaron las siguientes mejoras técnicas respecto al diseño inicial:
+1. **Adición de `registrarMedicion(double)` en `Sensor`:**  
+   Se implementó para mantener la encapsulación pura (atributos `private`), evitando modificar directamente los atributos de medición desde clases externas.
+2. **Métodos específicos en subclases:**  
+   Se agregó `alertaHelada()` en `SensorTemperatura` y `requiereRiego()` en `SensorHumedadSuelo` para justificar de forma técnica y no forzada el uso de `instanceof` y `casting`.
+3. **Firma de colaboración en `SistemaRiego`:**  
+   El método `evaluarYEjecutar(SensorHumedadSuelo)` formalizó la relación de dependencia/asociación con el sensor de suelo, desacoplando el actuador de la jerarquía de herencia.
+
+## Diagrama UML final
+
+![Diagrama UML final](uml-final.png)
