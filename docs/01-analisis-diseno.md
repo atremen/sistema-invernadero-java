@@ -135,3 +135,26 @@ El `SistemaRiego` **no debe ser una subclase de `Sensor`** debido a las siguient
    Porque la acción conceptual es idéntica en todos los sensores: evaluar la lectura actual. Lo único que varía es la regla de negocio para clasificar esa lectura.
 4. **¿Qué ventaja tiene esto frente a crear métodos con nombres distintos?**  
    Permite aplicar polimorfismo: podemos invocar `evaluarMedicion()` sobre cualquier referencia de tipo `Sensor` sin necesidad de conocer de antemano el tipo concreto del objeto ni escribir estructuras `switch` o `if/else`.
+## 7. Polimorfismo y enlace dinámico
+
+### Tabla de resolución dinámica
+
+| Tipo de referencia | Tipo real del objeto | Método que se ejecuta |
+|---|---|---|
+| `Sensor` | `SensorTemperatura` | `SensorTemperatura.evaluarMedicion()` |
+| `Sensor` | `SensorHumedad` | `SensorHumedad.evaluarMedicion()` |
+| `Sensor` | `SensorHumedadSuelo` | `SensorHumedadSuelo.evaluarMedicion()` |
+
+### Preguntas de análisis
+1. **¿Por qué una referencia de tipo `Sensor` puede apuntar a un objeto `SensorTemperatura`?**  
+   Porque existe una relación de herencia ("es un"). Debido al principio de sustitución de Liskov, cualquier instancia de una subclase es compatible con una variable tipada con su superclase.
+2. **¿Puede una referencia `SensorTemperatura` apuntar directamente a cualquier objeto `Sensor`?**  
+   No. Un `Sensor` genérico no garantiza poseer las características y comportamientos específicos de `SensorTemperatura`. Requiere una conversión explícita (casting) previa verificación.
+3. **Cuando ejecutas `sensor.evaluarMedicion()`, ¿qué versión del método se ejecuta?**  
+   Se ejecuta la versión de la clase real instanciada en memoria con `new` (`SensorTemperatura`, `SensorHumedad` o `SensorHumedadSuelo`), no la de la superclase `Sensor`.
+4. **¿Cómo determina Java cuál implementación utilizar?**  
+   Mediante enlace dinámico (*dynamic binding*). En tiempo de ejecución, la Máquina Virtual de Java (JVM) inspecciona el encabezado del objeto en memoria (*vtable*) para despachar la llamada al método sobrescrito correspondiente.
+5. **¿Dónde puedes observar el polimorfismo?**  
+   En la colección `Sensor[] sensores`, donde un mismo tipo de referencia almacena objetos de distintas clases especializadas.
+6. **¿Dónde puedes observar el enlace dinámico?**  
+   Dentro del ciclo `for (Sensor sensor : sensores)`, donde la misma línea de código `sensor.evaluarMedicion()` invoca tres comportamientos distintos de forma transparente.
