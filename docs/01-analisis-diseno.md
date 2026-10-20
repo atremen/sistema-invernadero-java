@@ -158,3 +158,18 @@ El `SistemaRiego` **no debe ser una subclase de `Sensor`** debido a las siguient
    En la colección `Sensor[] sensores`, donde un mismo tipo de referencia almacena objetos de distintas clases especializadas.
 6. **¿Dónde puedes observar el enlace dinámico?**  
    Dentro del ciclo `for (Sensor sensor : sensores)`, donde la misma línea de código `sensor.evaluarMedicion()` invoca tres comportamientos distintos de forma transparente.
+## 8. Verificación de tipos, casting e integración del sistema
+
+### Análisis de instanceof y casting
+1. **¿Por qué fue necesario realizar el casting?**  
+   Porque al trabajar con una colección de tipo `Sensor[]`, el compilador únicamente reconoce los métodos declarados en la superclase `Sensor`. Para invocar métodos exclusivos de las subclases (como `alertaHelada()` o `requiereRiego()`), es necesario realizar una conversión de tipo hacia abajo (*downcasting*).
+2. **¿Qué comprueba `instanceof`?**  
+   Comprueba en tiempo de ejecución si el objeto referenciado es una instancia de una clase particular o de una subclase de ella, evitando excepciones de tipo `ClassCastException`.
+3. **¿Qué podría ocurrir si intentaras convertir un objeto a una subclase incorrecta?**  
+   La JVM lanzaría un error en tiempo de ejecución (`ClassCastException`), deteniendo la ejecución del programa.
+4. **¿Por qué no debes utilizar `instanceof` para sustituir innecesariamente el polimorfismo?**  
+   Porque encadenar múltiples `if (sensor instanceof ...)` rompe el principio de abierto/cerrado (OCP). Si se agrega una nueva subclase, habría que modificar todos los bloques condicionales en lugar de permitir que el enlace dinámico resuelva el comportamiento automáticamente.
+
+### Relación entre sensores y sistema de riego
+* **¿El sistema de riego "es un" sensor o utiliza información proporcionada por los sensores?**  
+  `SistemaRiego` **utiliza** información de los sensores. No es un sensor porque su responsabilidad no es medir ni registrar variables ambientales, sino actuar sobre el entorno físico (abrir o cerrar válvulas). Representa una relación de asociación/colaboración, no de herencia.
